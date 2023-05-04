@@ -79,3 +79,9 @@
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
+
+@page {
+  size: auto; /* auto is the initial value */
+  /* this affects the margin in the printer settings */
+  margin: 25mm 0in;
+}

@@ -9,8 +9,12 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@agentofuser/rehype-section": "^1.0.5",
+    "@hbsnow/rehype-sectionize": "^1.0.7",
     "@hookform/resolvers": "^3.1.0",
+    "@mantine/hooks": "^6.0.10",
     "@radix-ui/react-label": "^2.0.1",
+    "@radix-ui/react-scroll-area": "^1.0.3",
     "@radix-ui/react-slot": "^1.0.1",
     "@types/node": "18.16.3",
     "@types/react": "18.2.1",
@@ -20,6 +24,8 @@
     "clsx": "^1.2.1",
     "eslint": "8.39.0",
     "eslint-config-next": "13.3.4",
+    "hast-util-to-html": "^8.0.4",
+    "hastscript": "^7.2.0",
     "lucide-react": "^0.206.0",
     "markdown-wiki": "^0.0.1",
     "next": "13.3.4",
@@ -28,10 +34,15 @@
     "react-dom": "18.2.0",
     "react-hook-form": "^7.43.9",
     "react-markdown": "^8.0.7",
+    "rehype": "^12.0.1",
+    "rehype-format": "^4.0.1",
+    "rehype-react": "^7.2.0",
     "tailwind-merge": "^1.12.0",
     "tailwindcss": "3.3.2",
     "tailwindcss-animate": "^1.0.5",
     "typescript": "5.0.4",
+    "unist-util-filter": "^4.0.1",
+    "unist-util-visit": "^4.1.2",
     "zod": "^3.21.4"
   },
   "devDependencies": {
