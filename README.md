@@ -28,3 +28,4 @@ A few good Wikipedia articles to test with
 
 - [Wicklow Mountains](https://en.wikipedia.org/wiki/Wicklow_Mountains) - Good, basic article
 - [Fourier Transform](https://en.wikipedia.org/wiki/Fourier_transform) - Large article, includes inline images which should be kept
+- [Camp Crown](https://en.wikipedia.org/wiki/Camp_crown) - No short description on this article, use to check H1

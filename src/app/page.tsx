@@ -1,100 +1,31 @@
-// TODO: Logo links to homepage
-// TODO: Add a print button
+// TODO: Homepage explainer
 // TODO: Add a discreet "Printed from Wikiprint" footer
 // TODO: Add a "View on Wikipedia" button
 // TODO: Fix formatting for math articles e.g. https://en.wikipedia.org/wiki/Fourier_transform
 // TODO: Refactor to clean up code and put it in the right places
 //   TODO: Finalize support for /wiki/* URLs
+// TODO: Better loading state than "Loading..."
 // TODO: Add ability to hide paragraphs within sections
+// TODO: Lift current filter state to URL params for easier sharing
+// TODO: Support nesting within section/header data structure to improve functionality and possibly styling
+// TODO? Add a "currently looking at" indicator based on scroll location to the table of contents
+//  TODO: Automatically hide all sub-sections via option e.g. References > Bibliography on Republic_of_Ireland page
+// TODO? Look into NextJS 13 suspense boundaries?
 "use client";
 
-import Image from "next/image";
-import { Inter } from "next/font/google";
 import { useForm } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Fragment, ReactElement, ReactNode, createElement, useState } from "react";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
-import { rehype } from "rehype";
-import { CONTINUE, EXIT, SKIP, visit } from "unist-util-visit";
-import { filter } from "unist-util-filter";
-import { h } from "hastscript";
-import rehypeFormat from "rehype-format";
 import { useListState } from "@mantine/hooks";
-import { ElementContent } from "react-markdown/lib/ast-to-react";
-import { toHtml } from "hast-util-to-html";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Root } from "hastscript/lib/core";
-
-const filters = [
-  {
-    tagName: "table",
-    className: "infobox",
-  },
-  {
-    tagName: "div",
-    className: "thumb",
-  },
-  {
-    tagName: "ul",
-    className: "gallery",
-  },
-  {
-    tagName: "sup",
-    className: "reference",
-  },
-  {
-    tagName: "span",
-    className: "mw-editsection",
-  },
-  {
-    tagName: "div",
-    className: "navbox",
-  },
-  {
-    tagName: "div",
-    className: "navbox-styles",
-  },
-];
-
-function shouldFilter(node: any) {
-  return filters.some((filter) => {
-    return node.tagName === filter.tagName && node.properties?.className?.includes(filter.className);
-  });
-}
-
-function filterTable(node: any) {
-  if (shouldFilter(node)) {
-    return false;
-  } else if (node.children) {
-    node.children = node.children.filter(filterTable);
-    return true;
-  } else {
-    return true;
-  }
-}
-
-function addClass(node: any, className: string) {
-  if (!node.properties) node.properties = {};
-  if (!Array.isArray(node.properties.className)) node.properties.className = [];
-  node.properties.className.push(className);
-}
-
-function hasClass(node: any, className: string) {
-  if (!node.properties || typeof node.properties !== "object") return false;
-
-  if (typeof node.properties.className === "string") {
-    return node.properties.className === className;
-  } else if (Array.isArray(node.properties.className)) {
-    return node.properties.className.includes(className);
-  } else {
-    return false;
-  }
-}
+import { HeaderData, SectionData, parse } from "@/lib/article";
+import TableOfContents from "@/components/table-of-contents";
+import { EyeIcon, EyeOffIcon, PrinterIcon } from "lucide-react";
 
 const schema = z.object({
   url: z.string().url(),
@@ -112,164 +43,6 @@ const defaultBlockSections = [
   "Sources",
 ];
 
-const headingElementList = ["h1", "h2", "h3", "h4", "h5", "h6"];
-function isHeading(node: string): node is HeadingElement {
-  return headingElementList.includes(node);
-}
-
-function TocHeading({
-  type,
-  hideList,
-  id,
-  children,
-  toggle,
-}: {
-  type: HeadingElement;
-  id: string;
-  hideList: string[];
-  children: ReactNode;
-  toggle: (id: string) => void;
-}) {
-  const El = type;
-  const isHidden = hideList.includes(id);
-  return (
-    <li
-      className={cn([
-        {
-          "flex justify-between items-center": true,
-          "opacity-50": isHidden,
-          "ml-4": type === "h3",
-          "ml-8": type === "h4",
-          "ml-12": type === "h5",
-        },
-      ])}
-    >
-      <a
-        className={cn([
-          {
-            "text-2xl font-[350] font-serif text-slate-800": type === "h2" || type === "h1",
-            "text-sm text-slate-500": type !== "h2" && type !== "h1",
-          },
-        ])}
-        href={isHidden ? "#" : `#${id}`}
-        onClick={(e) => {
-          if (isHidden) {
-            e.preventDefault();
-            toggle(id);
-          }
-        }}
-      >
-        {children}
-      </a>
-      <Button className="text-sm" variant="ghost" size="sm" onClick={() => toggle(id)}>
-        {isHidden ? "Show" : "Hide"}
-      </Button>
-    </li>
-  );
-}
-
-type HeadingElement = "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
-type HeaderData = { title: string; id: string; type: HeadingElement };
-type SectionData = { __html: string; id: string };
-
-function collectSiblings(siblings: ElementContent[], startingIndex: number = 0, firstElement?: ElementContent) {
-  const index = firstElement ? startingIndex + 1 : startingIndex;
-  // Create a root node, aka a fragment.
-  const section = h(null, firstElement ? [firstElement] : []);
-
-  // Add next siblings until we find another heading
-  for (let i = index; i < siblings.length; i++) {
-    const sibling = siblings[i];
-    console.log(i, sibling);
-    if ("tagName" in sibling && isHeading(sibling.tagName)) {
-      break;
-    } else {
-      section.children.push(sibling);
-    }
-  }
-  return section;
-}
-
-type ParseOptions = {
-  title: string;
-  id: string;
-};
-async function parse(html: string, options: ParseOptions) {
-  // Log time to run filter
-  const start = Date.now();
-  console.log("Starting");
-  const headers: HeaderData[] = [];
-  const sections: SectionData[] = [];
-  await rehype()
-    .use(() => (tree, file) => {
-      // Remove table.infobox
-      filter(tree, { cascade: true }, filterTable);
-      visit(tree, "element", (node) => {
-        if (node.tagName === "a") {
-          if (!node.properties || typeof node.properties.href !== "string") return;
-          // TODO: Style external links, but hide that style when printing
-          // node.properties.href = node.properties.href.replace(/\/wiki\//, "?");
-          addClass(node, "print:font-normal print:no-underline");
-        } else if (node.tagName === "div" && hasClass(node, "hatnote")) {
-          addClass(node, "print:hidden");
-        }
-      });
-    })
-    .use(() => (tree, file) => {
-      // Gather each heading and its subsequent non-heading elements
-      visit(tree, "element", (node, index, parent) => {
-        if (!parent || typeof index !== "number") return CONTINUE;
-
-        let title = "";
-        let id = "";
-        let type: HeadingElement = "h2";
-        let section: Root;
-
-        if (node.tagName === "div" && hasClass(node, "mw-parser-output")) {
-          title = options.title;
-          id = options.id;
-          type = "h1";
-          section = collectSiblings(node.children, 0, h("h1", null, title));
-          headers.push({ title, id, type });
-          sections.push({ __html: toHtml(section), id: id || "" });
-          return CONTINUE;
-        } else if (isHeading(node.tagName)) {
-          // Visit the nodes of the heading since an inner <span> contains the id
-          type = node.tagName;
-          visit(
-            node,
-            (x) => ["text", "element"].includes(x.type),
-            (c) => {
-              if (c.type === "text") {
-                title += c.value;
-              } else if ("properties" in c && c.properties && c.properties.id) {
-                id = c.properties.id as string;
-                // Duplicate IDs aren't allowed in HTML, so remove the ID from the heading
-                // We add ID to the section element in React instead
-                c.properties.id = undefined;
-              }
-            }
-          );
-          section = collectSiblings(parent.children as ElementContent[], index, node);
-          // headers.push({ title, id, type });
-          // sections.push({ __html: toHtml(section), id: id || "" });
-          parent.children.splice(index, section.children.length - 1);
-        } else {
-          return CONTINUE;
-        }
-
-        headers.push({ title, id, type });
-        sections.push({ __html: toHtml(section), id });
-        // Don't add the section built above, it will be returned as data instead.
-        return [SKIP, index];
-      });
-    })
-    .use([rehypeFormat])
-    .process(html);
-  console.log("Ending", Date.now() - start + "ms");
-  return { headers, sections };
-}
-
 export default function Home() {
   const form = useForm<Schema>({
     resolver: zodResolver(schema),
@@ -278,7 +51,7 @@ export default function Home() {
     },
   });
 
-  const [hideList, setHideList] = useListState(defaultBlockSections);
+  const [hideList, hideListHandlers] = useListState(defaultBlockSections);
   const [sections, setSections] = useListState<SectionData>([]);
   const [title, setTitle] = useState<string>("");
   const [pageSlug, setPageSlug] = useState<string>("");
@@ -288,51 +61,19 @@ export default function Home() {
 
   return (
     <main className="relative flex flex-col items-center justify-between print:mx-[24mm]">
-      <div
-        className={cn([
-          "sticky top-0 bg-white py-4 print:hidden z-10 w-full px-4 font-mono text-sm flex items-center h-header overflow-hidden border-bottom",
-        ])}
-      >
-        <Image
-          alt="An animated cartoon printer with a face, spitting out papers"
-          // className="translate-x-[15%]"
-          src="/printer.gif"
-          fetchPriority="high"
-          width={180}
-          height={180}
-        />
-        <p className={cn(["font-serif text-4xl -translate-x-16"])}>Wikiprint</p>
-        <div className="absolute bottom-0 w-full h-6 bg-gradient-to-b from-transparent to-white" />
-      </div>
-
-      <div className="flex items-start justify-start w-full gap-24 px-4 mb-48 print:mb-0">
+      <div className="flex items-start justify-start w-full px-4 mb-48 gap-36 print:mb-0">
         <div className="sticky w-full max-w-xs print:hidden top-header">
-          <ScrollArea className="w-full h-[calc(100vh-var(--header-height))] max-w-xs">
-            <ul className="pt-4 pb-16 space-y-4">
-              {toc.map((h) => (
-                <TocHeading
-                  key={h.id}
-                  hideList={hideList}
-                  id={h.id}
-                  type={h.type}
-                  toggle={(id) => {
-                    if (hideList.includes(id)) {
-                      setHideList.filter((x) => x !== id);
-                    } else {
-                      setHideList.append(id);
-                    }
-                  }}
-                >
-                  {h.title}
-                </TocHeading>
-              ))}
-            </ul>
-          </ScrollArea>
+          <TableOfContents
+            headers={toc}
+            show={(id) => hideListHandlers.filter((x) => x !== id)}
+            hide={hideListHandlers.append}
+            hideList={hideList}
+          />
         </div>
         <div className={cn(["relative w-full print:max-w-none"])}>
-          <div className="flex items-end w-full py-4 bg-white print:hidden">
+          <div className="flex w-full py-4 bg-white print:hidden">
             <form
-              className="flex items-end flex-grow space-x-4 max-w-prose"
+              className="flex items-end flex-grow mb-8 space-x-4 max-w-prose"
               onSubmit={form.handleSubmit(async ({ url }) => {
                 setStatus("loading");
                 // https://en.wikipedia.org/w/api.php?action=parse&page=Wicklow_Mountains&prop=wikitext&origin=*&format=json
@@ -380,16 +121,32 @@ export default function Home() {
                   Parse
                 </Button>
               ) : null}
+              <Button
+                type="button"
+                variant="secondary"
+                aria-label="Print this page"
+                title="Print this page"
+                onClick={() => window.print()}
+              >
+                <PrinterIcon size={16} />
+              </Button>
             </form>
           </div>
           {status === "loading" ? <div>Loading...</div> : null}
           {status === "idle" && sections.length ? (
             <>
               <div className="prose">
+                {title ? <h1 className="hidden mb-0 print:block">{title}</h1> : null}
                 {sections.map((s) => {
-                  return <Section key={s.id} isHidden={hideList.includes(s.id)} {...s} />;
+                  const isHidden = hideList.includes(s.id);
+                  const show = (id: string) => hideListHandlers.filter((x) => x !== s.id);
+                  const hide = (id: string) => hideListHandlers.append(s.id);
+                  return <Section key={s.id} isHidden={isHidden} toggle={isHidden ? show : hide} {...s} />;
                 })}
               </div>
+              {/* <div className="fixed left-0 right-0 hidden mx-auto font-mono text-xs text-center print:block">
+                Printed from https://wikiprint.vercel.app/wiki/{pageSlug}
+              </div> */}
               <RawContent raw={raw} />
             </>
           ) : null}
@@ -399,9 +156,38 @@ export default function Home() {
   );
 }
 
-function Section({ id, __html, isHidden }: { id: string; isHidden: boolean; __html: string }) {
-  if (isHidden) return null;
-  return <section id={id} dangerouslySetInnerHTML={{ __html }} />;
+function Section({
+  id,
+  __html,
+  isHidden,
+  toggle,
+}: {
+  id: string;
+  isHidden: boolean;
+  __html: string;
+  toggle: (id: string) => void;
+}) {
+  // if (isHidden) return null;
+  return (
+    <section className="relative" id={id}>
+      <div
+        className={cn([
+          {
+            "hide-content print:hidden opacity-50 hover:opacity-100 cursor-pointer": isHidden,
+          },
+        ])}
+        onClick={() => {
+          if (isHidden) toggle(id);
+        }}
+        dangerouslySetInnerHTML={{ __html }}
+      />
+      <div className="absolute top-0 right-4 print:hidden">
+        <Button onClick={() => toggle(id)} variant="ghost">
+          {isHidden ? <EyeOffIcon strokeWidth={1} size={16} /> : <EyeIcon strokeWidth={1} size={16} />}
+        </Button>
+      </div>
+    </section>
+  );
 }
 
 function RawContent({ raw }: { raw?: string }) {

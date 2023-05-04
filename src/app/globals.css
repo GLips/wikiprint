@@ -81,6 +81,34 @@
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
+@layer utilities {
+  .prose h1 {
+    @apply text-5xl font-normal font-serif;
+  }
+  .prose h2 {
+    @apply text-3xl font-normal font-serif;
+    margin-top: 1em;
+    margin-bottom: 0.5em;
+  }
+  .prose h3,
+  .prose h4,
+  .prose h5,
+  .prose h6 {
+    margin-top: 0.75em;
+    margin-bottom: 0.25em;
+  }
+}
+
+.hide-content > :is(:not(:where(h1, h2, h3, h4, h5, h6, th))) {
+  display: none;
+}
+
+input,
+textarea,
+button,
+a {
+  touch-action: manipulation;
+}
 
 .prose a[href^="http"] {
   border: 0;
