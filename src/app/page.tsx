@@ -12,14 +12,15 @@ import { Fragment, ReactElement, ReactNode, createElement, useState } from "reac
 import { cn } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
 import { rehype } from "rehype";
-import { CONTINUE, SKIP, visit } from "unist-util-visit";
+import { CONTINUE, EXIT, SKIP, visit } from "unist-util-visit";
 import { filter } from "unist-util-filter";
 import { h } from "hastscript";
-// import rehypeFormat from "rehype-format";
+import rehypeFormat from "rehype-format";
 import { useListState } from "@mantine/hooks";
 import { ElementContent } from "react-markdown/lib/ast-to-react";
 import { toHtml } from "hast-util-to-html";
-import { env } from "process";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Root } from "hastscript/lib/core";
 
 const filters = [
   {
@@ -108,35 +109,48 @@ function TocHeading({
   hideList,
   id,
   children,
-  actions,
+  toggle,
 }: {
   type: HeadingElement;
   id: string;
   hideList: string[];
   children: ReactNode;
-  actions: ReactNode;
+  toggle: (id: string) => void;
 }) {
   const El = type;
+  const isHidden = hideList.includes(id);
   return (
     <li
       className={cn([
         {
           "flex justify-between items-center": true,
-          "opacity-50": hideList.includes(id),
+          "opacity-50": isHidden,
           "ml-4": type === "h3",
           "ml-8": type === "h4",
           "ml-12": type === "h5",
         },
       ])}
     >
-      <span
+      <a
         className={cn([
-          { "text-2xl font-[350] font-serif text-slate-800": type === "h2", "text-sm text-slate-500": type !== "h2" },
+          {
+            "text-2xl font-[350] font-serif text-slate-800": type === "h2" || type === "h1",
+            "text-sm text-slate-500": type !== "h2" && type !== "h1",
+          },
         ])}
+        href={isHidden ? "#" : `#${id}`}
+        onClick={(e) => {
+          if (isHidden) {
+            e.preventDefault();
+            toggle(id);
+          }
+        }}
       >
         {children}
-      </span>
-      {actions}
+      </a>
+      <Button className="text-sm" variant="ghost" size="sm" onClick={() => toggle(id)}>
+        {isHidden ? "Show" : "Hide"}
+      </Button>
     </li>
   );
 }
@@ -145,7 +159,29 @@ type HeadingElement = "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
 type HeaderData = { title: string; id: string; type: HeadingElement };
 type SectionData = { __html: string; id: string };
 
-async function parse(html: string, hideList: string[]) {
+function collectSiblings(siblings: ElementContent[], startingIndex: number = 0, firstElement?: ElementContent) {
+  const index = firstElement ? startingIndex + 1 : startingIndex;
+  // Create a root node, aka a fragment.
+  const section = h(null, firstElement ? [firstElement] : []);
+
+  // Add next siblings until we find another heading
+  for (let i = index; i < siblings.length; i++) {
+    const sibling = siblings[i];
+    console.log(i, sibling);
+    if ("tagName" in sibling && isHeading(sibling.tagName)) {
+      break;
+    } else {
+      section.children.push(sibling);
+    }
+  }
+  return section;
+}
+
+type ParseOptions = {
+  title: string;
+  id: string;
+};
+async function parse(html: string, options: ParseOptions) {
   // Log time to run filter
   const start = Date.now();
   console.log("Starting");
@@ -159,7 +195,7 @@ async function parse(html: string, hideList: string[]) {
         if (node.tagName === "a") {
           if (!node.properties || typeof node.properties.href !== "string") return;
           // TODO: Style external links, but hide that style when printing
-          node.properties.href = node.properties.href.replace(/\/wiki\//, "?");
+          // node.properties.href = node.properties.href.replace(/\/wiki\//, "?");
           addClass(node, "print:font-normal print:no-underline");
         } else if (node.tagName === "div" && hasClass(node, "hatnote")) {
           addClass(node, "print:hidden");
@@ -169,46 +205,53 @@ async function parse(html: string, hideList: string[]) {
     .use(() => (tree, file) => {
       // Gather each heading and its subsequent non-heading elements
       visit(tree, "element", (node, index, parent) => {
-        if (!parent || typeof index !== "number" || !isHeading(node.tagName)) return CONTINUE;
+        if (!parent || typeof index !== "number") return CONTINUE;
 
         let title = "";
         let id = "";
+        let type: HeadingElement = "h2";
+        let section: Root;
 
-        // Visit the nodes of the heading since an inner <span> contains the id
-        visit(
-          node,
-          (x) => ["text", "element"].includes(x.type),
-          (c) => {
-            if (c.type === "text") {
-              title += c.value;
-            } else if ("properties" in c && c.properties && c.properties.id) {
-              id = c.properties.id as string;
-              // Duplicate IDs aren't allowed in HTML, so remove the ID from the heading
-              // We add ID to the section element in React instead
-              c.properties.id = undefined;
+        if (node.tagName === "div" && hasClass(node, "mw-parser-output")) {
+          title = options.title;
+          id = options.id;
+          type = "h1";
+          section = collectSiblings(node.children, 0, h("h1", null, title));
+          headers.push({ title, id, type });
+          sections.push({ __html: toHtml(section), id: id || "" });
+          return CONTINUE;
+        } else if (isHeading(node.tagName)) {
+          // Visit the nodes of the heading since an inner <span> contains the id
+          type = node.tagName;
+          visit(
+            node,
+            (x) => ["text", "element"].includes(x.type),
+            (c) => {
+              if (c.type === "text") {
+                title += c.value;
+              } else if ("properties" in c && c.properties && c.properties.id) {
+                id = c.properties.id as string;
+                // Duplicate IDs aren't allowed in HTML, so remove the ID from the heading
+                // We add ID to the section element in React instead
+                c.properties.id = undefined;
+              }
             }
-          }
-        );
-
-        // Create a root node, aka a fragment.
-        const section = h(null, [node]);
-
-        // Add next siblings until we find another heading
-        for (let i = index + 1; i < parent.children.length; i++) {
-          const sibling = parent.children[i];
-          if ("tagName" in sibling && isHeading(sibling.tagName)) {
-            break;
-          } else {
-            section.children.push(sibling);
-          }
+          );
+          section = collectSiblings(parent.children as ElementContent[], index, node);
+          // headers.push({ title, id, type });
+          // sections.push({ __html: toHtml(section), id: id || "" });
+          parent.children.splice(index, section.children.length - 1);
+        } else {
+          return CONTINUE;
         }
-        headers.push({ title, id, type: node.tagName });
-        sections.push({ __html: toHtml(section), id: id || "" });
+
+        headers.push({ title, id, type });
+        sections.push({ __html: toHtml(section), id });
         // Don't add the section built above, it will be returned as data instead.
-        parent.children.splice(index, section.children.length - 1);
         return [SKIP, index];
       });
     })
+    .use([rehypeFormat])
     .process(html);
   console.log("Ending", Date.now() - start + "ms");
   return { headers, sections };
@@ -224,20 +267,21 @@ export default function Home() {
 
   const [hideList, setHideList] = useListState(defaultBlockSections);
   const [sections, setSections] = useListState<SectionData>([]);
-  const [title, setTitle] = useState<string | null>(null);
+  const [title, setTitle] = useState<string>("");
+  const [pageSlug, setPageSlug] = useState<string>("");
   const [raw, setRaw] = useState<string>("");
   const [toc, tocHandlers] = useListState<HeaderData>([]);
   const [status, setStatus] = useState<"idle" | "loading" | "parsing" | "error">("idle");
 
   return (
-    <main className="relative flex flex-col items-center justify-between min-h-screen print:mx-[24mm]">
+    <main className="relative flex flex-col items-center justify-between print:mx-[24mm]">
       <div
         className={cn([
-          "sticky top-0 bg-white py-4 print:hidden z-10 w-full px-4 font-mono text-sm flex items-center max-h-28 overflow-hidden border-bottom",
+          "sticky top-0 bg-white py-4 print:hidden z-10 w-full px-4 font-mono text-sm flex items-center h-header overflow-hidden border-bottom",
         ])}
       >
         <Image
-          alt="An animated anthropomorphic printer, spitting out papers"
+          alt="An animated cartoon printer with a face, spitting out papers"
           // className="translate-x-[15%]"
           src="/printer.gif"
           fetchPriority="high"
@@ -248,9 +292,9 @@ export default function Home() {
         <div className="absolute bottom-0 w-full h-6 bg-gradient-to-b from-transparent to-white" />
       </div>
 
-      <div className="flex items-start justify-start w-full gap-24 px-4">
-        <div className="sticky w-full max-w-xs print:hidden top-[112px]">
-          <ScrollArea className="w-full h-[100vh] max-w-xs">
+      <div className="flex items-start justify-start w-full gap-24 px-4 pb-48 print:pb-0">
+        <div className="sticky w-full max-w-xs print:hidden top-header">
+          <ScrollArea className="w-full max-h-[100vh] h-full max-w-xs">
             <ul className="space-y-4">
               {toc.map((h) => (
                 <TocHeading
@@ -258,22 +302,13 @@ export default function Home() {
                   hideList={hideList}
                   id={h.id}
                   type={h.type}
-                  actions={
-                    <Button
-                      className="text-sm"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        if (hideList.includes(h.id)) {
-                          setHideList.filter((x) => x !== h.id);
-                        } else {
-                          setHideList.append(h.id);
-                        }
-                      }}
-                    >
-                      {hideList.includes(h.id) ? "Show" : "Hide"}
-                    </Button>
-                  }
+                  toggle={(id) => {
+                    if (hideList.includes(id)) {
+                      setHideList.filter((x) => x !== id);
+                    } else {
+                      setHideList.append(id);
+                    }
+                  }}
                 >
                   {h.title}
                 </TocHeading>
@@ -281,7 +316,7 @@ export default function Home() {
             </ul>
           </ScrollArea>
         </div>
-        <div className={cn(["relative w-full print:max-w-none pb-48 print:pb-0"])}>
+        <div className={cn(["relative w-full print:max-w-none"])}>
           <div className="flex items-end w-full py-4 bg-white print:hidden">
             <form
               className="flex items-end flex-grow space-x-4 max-w-prose"
@@ -290,12 +325,12 @@ export default function Home() {
                 // https://en.wikipedia.org/w/api.php?action=parse&page=Wicklow_Mountains&prop=wikitext&origin=*&format=json
                 // Regex to pull page name from Wikipedia URL
                 const urlRegex = /https:\/\/en\.wikipedia\.org\/wiki\/(.*?)(?:$|\/|\?)/;
-                const pageTitle = urlRegex.exec(url)?.[1];
-                if (!pageTitle) throw new Error("Invalid URL");
+                const pageSlug = urlRegex.exec(url)?.[1];
+                if (!pageSlug) throw new Error("Invalid URL");
                 const wikiAPIUrl = `https://en.wikipedia.org/w/api.php?`;
                 const params = [
                   "action=parse",
-                  `page=${pageTitle}`,
+                  `page=${pageSlug}`,
                   "prop=text",
                   "origin=*",
                   "format=json",
@@ -306,8 +341,9 @@ export default function Home() {
                 const html = content.text["*"];
                 setTitle(content.title);
                 setRaw(html);
+                setPageSlug(pageSlug);
                 requestAnimationFrame(() => setStatus("parsing"));
-                const hype = await parse(html, hideList);
+                const hype = await parse(html, { id: pageSlug, title: content.title });
                 setSections.setState(hype.sections);
                 tocHandlers.setState(hype.headers);
                 setRaw(html);
@@ -323,7 +359,7 @@ export default function Home() {
                 <Button
                   type="button"
                   onClick={async () => {
-                    const r = await parse(raw, hideList);
+                    const r = await parse(raw, { title, id: pageSlug });
                     tocHandlers.setState(r.headers);
                     setSections.setState(r.sections);
                   }}
@@ -333,20 +369,17 @@ export default function Home() {
               ) : null}
             </form>
           </div>
-          <div className="prose">
-            {/* <div className="font-mono">Status: {status}</div> */}
-            {title ? <h1>{title}</h1> : null}
-            {process.env.NODE_ENV === "development" && raw ? (
-              <div className="print:hidden">
-                <h2>Raw content</h2>
-                <pre className="max-h-[50vh] overflow-scroll">{raw}</pre>
+          {status === "loading" ? <div>Loading...</div> : null}
+          {status === "idle" && sections.length ? (
+            <>
+              <div className="prose">
+                {sections.map((s) => {
+                  return <Section key={s.id} isHidden={hideList.includes(s.id)} {...s} />;
+                })}
               </div>
-            ) : null}
-            {/* <h2>Parsed content</h2> */}
-            {sections.map((s) => {
-              return <Section key={s.id} isHidden={hideList.includes(s.id)} {...s} />;
-            })}
-          </div>
+              <RawContent raw={raw} />
+            </>
+          ) : null}
         </div>
       </div>
     </main>
@@ -356,4 +389,20 @@ export default function Home() {
 function Section({ id, __html, isHidden }: { id: string; isHidden: boolean; __html: string }) {
   if (isHidden) return null;
   return <section id={id} dangerouslySetInnerHTML={{ __html }} />;
+}
+
+function RawContent({ raw }: { raw?: string }) {
+  if (process.env.NODE_ENV !== "development" || !raw) return null;
+  return (
+    <Accordion className="mb-8 prose text-left print:hidden prose-headings:m-0 prose-pre:m-0" type="single" collapsible>
+      <AccordionItem value="item-1">
+        <AccordionTrigger className="justify-between font-mono text-3xl font-bold text-left">
+          Raw content
+        </AccordionTrigger>
+        <AccordionContent>
+          <pre className="max-h-[50vh] overflow-scroll">{raw}</pre>
+        </AccordionContent>
+      </AccordionItem>
+    </Accordion>
+  );
 }
