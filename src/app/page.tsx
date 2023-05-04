@@ -1,3 +1,11 @@
+// TODO: Logo links to homepage
+// TODO: Add a print button
+// TODO: Add a discreet "Printed from Wikiprint" footer
+// TODO: Add a "View on Wikipedia" button
+// TODO: Fix formatting for math articles e.g. https://en.wikipedia.org/wiki/Fourier_transform
+// TODO: Refactor to clean up code and put it in the right places
+//   TODO: Finalize support for /wiki/* URLs
+// TODO: Add ability to hide paragraphs within sections
 "use client";
 
 import Image from "next/image";
@@ -30,6 +38,10 @@ const filters = [
   {
     tagName: "div",
     className: "thumb",
+  },
+  {
+    tagName: "ul",
+    className: "gallery",
   },
   {
     tagName: "sup",
@@ -96,6 +108,7 @@ const defaultBlockSections = [
   "Further_reading",
   "External_links",
   "Citations",
+  "References_and_sources",
   "Sources",
 ];
 
@@ -292,10 +305,10 @@ export default function Home() {
         <div className="absolute bottom-0 w-full h-6 bg-gradient-to-b from-transparent to-white" />
       </div>
 
-      <div className="flex items-start justify-start w-full gap-24 px-4 pb-48 print:pb-0">
+      <div className="flex items-start justify-start w-full gap-24 px-4 mb-48 print:mb-0">
         <div className="sticky w-full max-w-xs print:hidden top-header">
-          <ScrollArea className="w-full max-h-[100vh] h-full max-w-xs">
-            <ul className="space-y-4">
+          <ScrollArea className="w-full h-[calc(100vh-var(--header-height))] max-w-xs">
+            <ul className="pt-4 pb-16 space-y-4">
               {toc.map((h) => (
                 <TocHeading
                   key={h.id}
