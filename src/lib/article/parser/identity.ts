@@ -1,5 +1,5 @@
 import type { Element } from "hastscript/lib/core";
-import { HeadingElement } from "../types";
+import type { HastHeaderElement } from "../types";
 
 export function addClass(node: any, className: string) {
   if (!node.properties) node.properties = {};
@@ -46,6 +46,10 @@ const headingElementList = ["h1", "h2", "h3", "h4", "h5", "h6"];
 /**
  * Check if provided string is a heading
  */
-export function isHeading(node: string): node is HeadingElement {
-  return headingElementList.includes(node);
+export function isHeading(node: Element): node is HastHeaderElement {
+  return headingElementList.includes(node.tagName);
+}
+
+export function isContentWrapper(node: Element): boolean {
+  return node.tagName === "div" && hasClass(node, "mw-parser-output");
 }

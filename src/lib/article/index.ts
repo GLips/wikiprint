@@ -1,2 +1,2 @@
-export type { HeaderData, HeadingElement, SectionData } from "./types";
+export type { HeaderData, HeadingElementValues as HeadingElement, SectionData } from "./types";
 export { parse } from "./parser";

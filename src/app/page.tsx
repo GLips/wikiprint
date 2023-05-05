@@ -1,31 +1,20 @@
-// TODO: Homepage explainer
-// TODO: Add a discreet "Printed from Wikiprint" footer
-// TODO: Add a "View on Wikipedia" button
-// TODO: Fix formatting for math articles e.g. https://en.wikipedia.org/wiki/Fourier_transform
-// TODO: Refactor to clean up code and put it in the right places
-//   TODO: Finalize support for /wiki/* URLs
-// TODO: Better loading state than "Loading..."
-// TODO: Add ability to hide paragraphs within sections
-// TODO: Lift current filter state to URL params for easier sharing
-// TODO: Support nesting within section/header data structure to improve functionality and possibly styling
-// TODO? Add a "currently looking at" indicator based on scroll location to the table of contents
-//  TODO: Automatically hide all sub-sections via option e.g. References > Bibliography on Republic_of_Ireland page
-// TODO? Look into NextJS 13 suspense boundaries?
 "use client";
 
 import { useForm } from "react-hook-form";
-import { Input } from "@/components/ui/input";
+import { ServerError, TextInput, formErrorHandler, register } from "@/components/form";
 import { Button } from "@/components/ui/button";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { Label } from "@/components/ui/label";
 import { useListState } from "@mantine/hooks";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { HeaderData, SectionData, parse } from "@/lib/article";
+import { parse } from "@/lib/article";
 import TableOfContents from "@/components/table-of-contents";
 import { EyeIcon, EyeOffIcon, PrinterIcon } from "lucide-react";
+import { useArticleState } from "@/app/article/use-article-state";
+import { fetchArticleData } from "@/app/article/fetch-article";
+import { useEffect, useRef } from "react";
+import WikipediaUrlForm from "@/components/wikipedia-url-form";
 
 const schema = z.object({
   url: z.string().url(),
@@ -43,113 +32,45 @@ const defaultBlockSections = [
   "Sources",
 ];
 
-export default function Home() {
+export default function Home({
+  params,
+  searchParams,
+}: {
+  params: { slug: string };
+  searchParams: { [key: string]: string | string[] | undefined };
+}) {
   const form = useForm<Schema>({
     resolver: zodResolver(schema),
     defaultValues: {
-      url: "https://en.wikipedia.org/wiki/Wicklow_Mountains",
+      url: `https://en.wikipedia.org/wiki/${params.slug ? params.slug : "French_cuisine"}`,
     },
   });
 
-  const [hideList, hideListHandlers] = useListState(defaultBlockSections);
-  const [sections, setSections] = useListState<SectionData>([]);
-  const [title, setTitle] = useState<string>("");
-  const [pageSlug, setPageSlug] = useState<string>("");
-  const [raw, setRaw] = useState<string>("");
-  const [toc, tocHandlers] = useListState<HeaderData>([]);
-  const [status, setStatus] = useState<"idle" | "loading" | "parsing" | "error">("idle");
+  const formRef = useRef<HTMLFormElement>(null);
+  const [hiddenIds, hiddenIdsHandlers] = useListState(defaultBlockSections);
+  const [state, updateArticleState] = useArticleState();
+  const { raw, title, pageSlug, status, sections, headers } = state;
+
+  useEffect(() => {
+    formRef.current?.dispatchEvent(new Event("submit", { cancelable: true, bubbles: true }));
+  }, []);
 
   return (
-    <main className="relative flex flex-col items-center justify-between print:mx-[24mm]">
-      <div className="flex items-start justify-start w-full px-4 mb-48 gap-36 print:mb-0">
-        <div className="sticky w-full max-w-xs print:hidden top-header">
-          <TableOfContents
-            headers={toc}
-            show={(id) => hideListHandlers.filter((x) => x !== id)}
-            hide={hideListHandlers.append}
-            hideList={hideList}
-          />
-        </div>
-        <div className={cn(["relative w-full print:max-w-none"])}>
-          <div className="flex w-full py-4 bg-white print:hidden">
-            <form
-              className="flex items-end flex-grow mb-8 space-x-4 max-w-prose"
-              onSubmit={form.handleSubmit(async ({ url }) => {
-                setStatus("loading");
-                // https://en.wikipedia.org/w/api.php?action=parse&page=Wicklow_Mountains&prop=wikitext&origin=*&format=json
-                // Regex to pull page name from Wikipedia URL
-                const urlRegex = /https:\/\/en\.wikipedia\.org\/wiki\/(.*?)(?:$|\/|\?)/;
-                const pageSlug = urlRegex.exec(url)?.[1];
-                if (!pageSlug) throw new Error("Invalid URL");
-                const wikiAPIUrl = `https://en.wikipedia.org/w/api.php?`;
-                const params = [
-                  "action=parse",
-                  `page=${pageSlug}`,
-                  "prop=text",
-                  "origin=*",
-                  "format=json",
-                  "redirects=",
-                ];
-                const { parse: content } = await (await fetch(wikiAPIUrl + params.join("&"))).json();
-                console.log({ rawContent: content });
-                const html = content.text["*"];
-                setTitle(content.title);
-                setRaw(html);
-                setPageSlug(pageSlug);
-                requestAnimationFrame(() => setStatus("parsing"));
-                const hype = await parse(html, { id: pageSlug, title: content.title });
-                setSections.setState(hype.sections);
-                tocHandlers.setState(hype.headers);
-                setRaw(html);
-                requestAnimationFrame(() => setStatus("idle"));
-              })}
-            >
-              <div className="w-full">
-                <Label htmlFor="url">Wikipedia URL</Label>
-                <Input className="w-full" {...form.register("url")} />
-              </div>
-              <Button type="submit">Load</Button>
-              {process.env.NODE_ENV === "development" ? (
-                <Button
-                  type="button"
-                  onClick={async () => {
-                    const r = await parse(raw, { title, id: pageSlug });
-                    tocHandlers.setState(r.headers);
-                    setSections.setState(r.sections);
-                  }}
-                >
-                  Parse
-                </Button>
-              ) : null}
-              <Button
-                type="button"
-                variant="secondary"
-                aria-label="Print this page"
-                title="Print this page"
-                onClick={() => window.print()}
-              >
-                <PrinterIcon size={16} />
-              </Button>
-            </form>
+    <main className="relative flex flex-col items-center justify-center px-4 print:mx-[24mm]">
+      <div className="mb-8 prose">
+        <h1 className="mb-4 font-serif text-6xl !leading-[1.1em] tracking-tight">
+          Get a printable version of any Wikipedia article (for free)
+        </h1>
+        <p>
+          Have you ever tried to print a Wikipedia article? It's horrendous. A convoluted jumble of text, tables,
+          images, and references. It makes for a great ink cartridge endurance test, but it's otherwise not very useful.
+        </p>
+        <p>Now, thankfully, there's a solution.</p>
+        <h2 className="!mb-0">Enter a Wikipedia article below</h2>
+        <div className="flex flex-col w-full not-prose">
+          <div className="flex justify-center">
+            <WikipediaUrlForm slug={"French_cuisine"} noArticle />
           </div>
-          {status === "loading" ? <div>Loading...</div> : null}
-          {status === "idle" && sections.length ? (
-            <>
-              <div className="prose">
-                {title ? <h1 className="hidden mb-0 print:block">{title}</h1> : null}
-                {sections.map((s) => {
-                  const isHidden = hideList.includes(s.id);
-                  const show = (id: string) => hideListHandlers.filter((x) => x !== s.id);
-                  const hide = (id: string) => hideListHandlers.append(s.id);
-                  return <Section key={s.id} isHidden={isHidden} toggle={isHidden ? show : hide} {...s} />;
-                })}
-              </div>
-              {/* <div className="fixed left-0 right-0 hidden mx-auto font-mono text-xs text-center print:block">
-                Printed from https://wikiprint.vercel.app/wiki/{pageSlug}
-              </div> */}
-              <RawContent raw={raw} />
-            </>
-          ) : null}
         </div>
       </div>
     </main>

@@ -17,7 +17,7 @@ export function collectSiblings(
   // Add next siblings until we find another heading
   for (let i = index; i < siblings.length; i++) {
     const sibling = siblings[i];
-    if ("tagName" in sibling && isHeading(sibling.tagName)) {
+    if ("tagName" in sibling && isHeading(sibling)) {
       break;
     } else {
       section.children.push(sibling);

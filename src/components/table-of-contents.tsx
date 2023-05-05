@@ -1,25 +1,25 @@
 import React, { ReactNode } from "react";
 import { ScrollArea } from "./ui/scroll-area";
-import { HeaderData, HeadingElement } from "@/lib/article/types";
+import { HeaderData, HeadingElementValues } from "@/lib/article/types";
 import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
 
 type Props = {
   headers: HeaderData[];
-  hideList: string[];
+  hiddenIds: string[];
   hide: (id: string) => void;
   show: (id: string) => void;
   className?: string;
 };
 
-export default function TableOfContents({ headers, hideList, hide, show, className }: Props) {
+export default function TableOfContents({ headers, hiddenIds, hide, show, className }: Props) {
   return (
     <ScrollArea className={cn(["w-full h-[calc(100vh-var(--header-height))] max-w-xs", className])}>
-      <h2 className="mt-4 text-sm font-light uppercase text-slate-500">Contents</h2>
+      {headers.length ? <h2 className="mt-4 text-sm font-light uppercase text-slate-500">Contents</h2> : null}
       <ul className="pt-4 pb-16 ml-4 space-y-4">
         {headers.map((h) => {
-          const isHidden = hideList.includes(h.id);
+          const isHidden = hiddenIds.includes(h.id);
           return (
             <TocHeading key={h.id} isHidden={isHidden} id={h.id} type={h.type} toggle={isHidden ? show : hide}>
               {h.title}
@@ -38,7 +38,7 @@ function TocHeading({
   children,
   toggle,
 }: {
-  type: HeadingElement;
+  type: HeadingElementValues;
   id: string;
   isHidden: boolean;
   children: ReactNode;
