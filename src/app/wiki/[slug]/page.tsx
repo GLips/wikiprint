@@ -1,3 +1,6 @@
+// TODO: OG image
+// TODO: Homepage image comparisons
+// TODO: Homepage "fun" articles
 // TODO: Add a discreet "Printed from Wikiprint" footer
 // TODO: Fix formatting for math articles e.g. https://en.wikipedia.org/wiki/Fourier_transform
 // TODO: Better loading state than "Loading..."
