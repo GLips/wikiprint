@@ -2,7 +2,6 @@
 // TODO: Homepage image comparisons
 // TODO: Homepage "fun" articles
 // TODO: Add a discreet "Printed from Wikiprint" footer
-// TODO: Fix formatting for math articles e.g. https://en.wikipedia.org/wiki/Fourier_transform
 // TODO: Better loading state than "Loading..."
 // TODO: Add ability to hide paragraphs within sections
 // TODO: Lift current filter state to URL params for easier sharing
@@ -126,7 +125,9 @@ function Home({ params, searchParams }: HomeProps) {
           />
         </div>
         <div className={cn(["relative w-full print:max-w-none"])}>
-          {pageSlug ? <WikipediaUrlForm slug={pageSlug} lang={lang} error={extractError(error)} /> : null}
+          {pageSlug ? (
+            <WikipediaUrlForm slug={pageSlug} lang={lang} className="mb-12" error={extractError(error)} />
+          ) : null}
           {status === "loading" ? <div>Loading...</div> : null}
           {status === "idle" && sections.length ? (
             <>

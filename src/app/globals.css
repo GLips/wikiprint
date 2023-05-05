@@ -125,6 +125,11 @@ a {
   height: 16px;
 }
 
+.prose img {
+  display: inline;
+  margin: 0;
+}
+
 @page {
   size: auto; /* auto is the initial value */
   /* this affects the margin in the printer settings */
@@ -145,4 +150,46 @@ section[id] {
 
 .h-header {
   height: var(--header-height);
+}
+
+.test {
+}
+.test:after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  user-select: none;
+  inset: 0px;
+  opacity: 0.8;
+  background: radial-gradient(ellipse 50% 50% at center, rgba(40, 87, 255, 0.1), rgba(255, 255, 255, 0));
+}
+
+.glow {
+  z-index: 8;
+  width: 100%;
+  height: 400px;
+  margin-bottom: -400px;
+  pointer-events: none;
+  user-select: none;
+  --top: #000212;
+  --bottom: rgb(var(--rgb, 53, 42, 79));
+  --first: conic-gradient(from 90deg at 80% 50%, var(--top), var(--bottom));
+  --second: conic-gradient(from 270deg at 20% 50%, var(--bottom), var(--top));
+  -webkit-mask-image: radial-gradient(100% 50% at center center, black, transparent);
+  background-image: ;
+  background-attachment: ;
+  background-origin: ;
+  background-clip: ;
+  background-color: ;
+  background-position-x: 1%, 99%;
+  background-position-y: 0%, 0%;
+  background-size: 50% 100%, 50% 100%;
+}
+.glow:after {
+  filter: url(#noiseFilter);
+  position: absolute;
+  inset: 0px 0px 50%;
+  overflow: hidden;
+  opacity: 0.1;
+  -webkit-mask-image: radial-gradient(140px 50% at 50% 100%, black, transparent);
 }

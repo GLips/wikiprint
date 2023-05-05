@@ -4,6 +4,7 @@ import { formErrorHandler, TextInput, register, ServerError } from "@/components
 import FormError from "@/components/form/form-error";
 import { Button, ButtonProps } from "@/components/ui/button";
 import { ButtonLink } from "@/components/ui/button-link";
+import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ExternalLinkIcon, PrinterIcon } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -21,9 +22,10 @@ type Props = {
   lang?: string;
   error?: string;
   noArticle?: boolean;
+  className?: string;
 };
 
-export default function WikipediaUrlForm({ slug, lang, error, noArticle }: Props) {
+export default function WikipediaUrlForm({ slug, lang, error, noArticle, className }: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -37,9 +39,9 @@ export default function WikipediaUrlForm({ slug, lang, error, noArticle }: Props
   const inputUrl = form.watch("url");
 
   return (
-    <div className="w-full py-4 bg-white max-w-prose print:hidden">
+    <div className={cn(["w-full max-w-prose print:hidden", className])}>
       <form
-        className="flex items-end mb-8 space-x-4"
+        className="flex items-end space-x-4"
         onSubmit={form.handleSubmit(async ({ url }) => {
           try {
             const { slug, lang } = parseUrl(url);
@@ -57,7 +59,7 @@ export default function WikipediaUrlForm({ slug, lang, error, noArticle }: Props
           className="grow"
           label="Wikipedia URL"
           {...register(form, "url")}
-          inputClassName="text-base h-auto py-2.5"
+          inputClassName="text-base h-auto py-2.5 bg-white"
         />
         <Button
           type="submit"
