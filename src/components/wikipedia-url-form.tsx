@@ -1,6 +1,6 @@
 "use client";
 import { generateArticleUrl, parseUrl } from "@/app/article/fetch-article";
-import { formErrorHandler, TextInput, register, ServerError } from "@/components/form";
+import { formErrorHandler, TextInput, register } from "@/components/form";
 import FormError from "@/components/form/form-error";
 import { Button, ButtonProps } from "@/components/ui/button";
 import { ButtonLink } from "@/components/ui/button-link";
@@ -11,6 +11,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import React from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { Suspense } from "react";
 
 const schema = z.object({
   url: z.string().url(),
@@ -25,7 +26,7 @@ type Props = {
   className?: string;
 };
 
-export default function WikipediaUrlForm({ slug, lang, error, noArticle, className }: Props) {
+function _WikipediaUrlForm({ slug, lang, error, noArticle, className }: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -109,5 +110,13 @@ export default function WikipediaUrlForm({ slug, lang, error, noArticle, classNa
       </form>
       <FormError error={error} />
     </div>
+  );
+}
+
+export default function WikipediaUrlForm(props: Props) {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <_WikipediaUrlForm {...props} />
+    </Suspense>
   );
 }
