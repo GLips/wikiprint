@@ -83,10 +83,10 @@
 }
 @layer utilities {
   .prose h1 {
-    @apply text-5xl font-normal font-serif;
+    @apply text-3xl md:text-5xl font-normal font-serif;
   }
   .prose h2 {
-    @apply text-3xl font-normal font-serif;
+    @apply text-xl md:text-3xl font-normal font-serif;
     margin-top: 1em;
     margin-bottom: 0.5em;
   }
@@ -153,6 +153,7 @@ section[id] {
 }
 
 .test {
+  position: relative;
 }
 .test:after {
   content: "";

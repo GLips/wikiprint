@@ -41,7 +41,7 @@ export default function WikipediaUrlForm({ slug, lang, error, noArticle, classNa
   return (
     <div className={cn(["w-full max-w-prose print:hidden", className])}>
       <form
-        className="flex items-end space-x-4"
+        className="flex flex-col items-end space-y-4 md:space-y-0 md:space-x-4 md:flex-row"
         onSubmit={form.handleSubmit(async ({ url }) => {
           try {
             const { slug, lang } = parseUrl(url);
@@ -56,54 +56,56 @@ export default function WikipediaUrlForm({ slug, lang, error, noArticle, classNa
         })}
       >
         <TextInput
-          className="grow"
+          className="w-full grow"
           label="Wikipedia URL"
           {...register(form, "url")}
           inputClassName="text-base h-auto py-2.5 bg-white"
         />
-        <Button
-          type="submit"
-          variant={noArticle ? "blue" : "default"}
-          className={noArticle ? "text-base px-6 font-normal block py-2.5 h-auto" : undefined}
-        >
-          {noArticle ? "Get printable article" : "Load"}
-        </Button>
-        {/* {process.env.NODE_ENV === "development" ? (
-                <Button
-                  type="button"
-                  onClick={async () => {
-                    const result = await parse(raw, { title, id: slug, lang });
-                    updateArticleState(result);
-                  }}
-                >
-                  Parse
-                </Button>
-              ) : null} */}
-        {!noArticle ? (
-          <>
-            <ButtonLink
-              buttonProps={{ disabled: !form.getValues().url }}
-              variant="secondary"
-              aria-label="Visit on Wikipedia"
-              title="Visit on Wikipedia"
-              href={form.getValues().url}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <ExternalLinkIcon size={16} />
-            </ButtonLink>
-            <Button
-              type="button"
-              // disabled={!sections.length}
-              variant="secondary"
-              aria-label="Print this page"
-              title="Print this page"
-              onClick={() => window.print()}
-            >
-              <PrinterIcon size={16} />
-            </Button>
-          </>
-        ) : null}
+        <div className="flex justify-center space-x-4 md:justify-self-end grow">
+          <Button
+            type="submit"
+            variant={noArticle ? "blue" : "default"}
+            className={noArticle ? "text-base px-6 grow w-max font-normal block py-2.5 h-auto" : "w-max"}
+          >
+            {noArticle ? "Get printable article" : "Load"}
+          </Button>
+          {/* {process.env.NODE_ENV === "development" ? (
+                  <Button
+                    type="button"
+                    onClick={async () => {
+                      const result = await parse(raw, { title, id: slug, lang });
+                      updateArticleState(result);
+                    }}
+                  >
+                    Parse
+                  </Button>
+                ) : null} */}
+          {!noArticle ? (
+            <>
+              <ButtonLink
+                buttonProps={{ disabled: !form.getValues().url }}
+                variant="secondary"
+                aria-label="Visit on Wikipedia"
+                title="Visit on Wikipedia"
+                href={form.getValues().url}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <ExternalLinkIcon size={16} />
+              </ButtonLink>
+              <Button
+                type="button"
+                // disabled={!sections.length}
+                variant="secondary"
+                aria-label="Print this page"
+                title="Print this page"
+                onClick={() => window.print()}
+              >
+                <PrinterIcon size={16} />
+              </Button>
+            </>
+          ) : null}
+        </div>
       </form>
       <FormError error={error} />
     </div>

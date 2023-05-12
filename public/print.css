@@ -1,0 +1,8 @@
+.prose {
+  font-size: 14px;
+  line-height: 1.2em;
+}
+
+.prose a[href^="http"]:after {
+  display: none;
+}
