@@ -1,5 +1,3 @@
-// TODO: OG image
-// TODO: Homepage image comparisons
 // TODO: Homepage "fun" articles
 // TODO: Add a discreet "Printed from Wikiprint" footer
 // TODO: Better loading state than "Loading..."

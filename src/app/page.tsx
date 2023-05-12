@@ -1,27 +1,8 @@
-"use client";
-
 import Image from "next/image";
 import { ReactNode } from "react";
 import WikipediaUrlForm from "@/components/wikipedia-url-form";
 
-const defaultBlockSections = [
-  "See_also",
-  "Notes",
-  "References",
-  "Further_reading",
-  "External_links",
-  "Citations",
-  "References_and_sources",
-  "Sources",
-];
-
-export default function Home({
-  params,
-  searchParams,
-}: {
-  params: { slug: string };
-  searchParams: { [key: string]: string | string[] | undefined };
-}) {
+export default function Home() {
   return (
     <main className="relative flex flex-col items-center justify-center print:mx-[24mm]">
       <div className="w-full max-w-2xl px-4 mb-8 prose">
