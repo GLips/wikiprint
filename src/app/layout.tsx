@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import "./globals.css";
 import { Inter, Newsreader } from "next/font/google";
 import Image from "next/image";
@@ -6,7 +7,7 @@ import Link from "next/link";
 const sans = Inter({ subsets: ["latin"], variable: "--font-sans", display: "swap" });
 const serif = Newsreader({ subsets: ["latin"], variable: "--font-serif", display: "swap" });
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Wikiprint",
   description: "Printer friendly versions of Wikipedia articles.",
   openGraph: {
