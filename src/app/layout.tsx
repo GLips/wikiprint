@@ -46,7 +46,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </Link>
         </div>
         {children}
-        <link rel="stylesheet" href="/print.css" media="print" precedence="default" />
+        <link rel="stylesheet" href="/print.css" media="print" />
       </body>
     </html>
   );
