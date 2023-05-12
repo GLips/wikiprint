@@ -9,6 +9,21 @@ const serif = Newsreader({ subsets: ["latin"], variable: "--font-serif", display
 export const metadata = {
   title: "Wikiprint",
   description: "Printer friendly versions of Wikipedia articles.",
+  openGraph: {
+    title: "Wikiprint",
+    description: "Beautiful print versions of any Wikipedia article.",
+    url: "https://wikiprint.vercel.app/",
+    siteName: "Wikiprint",
+    images: [
+      {
+        url: "https://wikiprint.vercel.app/open-graph.png",
+        width: 1200,
+        height: 630,
+      },
+    ],
+    locale: "en-US",
+    type: "website",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
