@@ -30,7 +30,6 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${sans.variable} ${serif.variable}`}>
-      <link rel="stylesheet" href="/print.css" media="print" />
       <body>
         <div className="sticky top-0 z-10 flex items-center w-full px-4 py-4 overflow-hidden font-mono text-sm bg-white print:hidden h-header border-bottom">
           <Link href="/" className="flex items-center select-none" draggable={false}>
@@ -47,6 +46,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </Link>
         </div>
         {children}
+        <link rel="stylesheet" href="/print.css" media="print" precedence="default" />
       </body>
     </html>
   );

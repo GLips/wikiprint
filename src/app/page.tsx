@@ -50,10 +50,10 @@ export default function Home() {
               height={1345 / 2}
             />
           </div>
-          <div className="flex items-center justify-center gap-4 my-16 lg:my-48">
-            <span className="text-3xl text-slate-300">and</span>
+          <div className="flex items-center justify-center gap-4 my-16 lg:my-32">
+            <span className="font-sans text-3xl text-slate-300">and</span>
           </div>
-          <div className="grid items-center justify-center grid-cols-1 gap-4 lg:pt-24 lg:grid-cols-7">
+          <div className="grid items-center justify-center grid-cols-1 gap-4 lg:grid-cols-7">
             <Image
               alt="Wikipedia generally includes many pages full of footnotes and references."
               src="/wikipedia-references.png"
