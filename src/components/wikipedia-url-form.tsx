@@ -58,7 +58,7 @@ function _WikipediaUrlForm({ slug, lang, error, noArticle, className }: Props) {
       >
         <TextInput
           className="w-full grow"
-          label="Wikipedia URL"
+          label={noArticle ? "" : "Load any Wikipedia URL"}
           {...register(form, "url")}
           inputClassName="text-base h-auto py-2.5 bg-white"
         />
@@ -68,7 +68,7 @@ function _WikipediaUrlForm({ slug, lang, error, noArticle, className }: Props) {
             variant={noArticle ? "blue" : "default"}
             className={noArticle ? "text-base px-6 grow w-max font-normal block py-2.5 h-auto" : "w-max"}
           >
-            {noArticle ? "Get printable article" : "Load"}
+            {noArticle ? "View article" : "View"}
           </Button>
           {/* {process.env.NODE_ENV === "development" ? (
                   <Button

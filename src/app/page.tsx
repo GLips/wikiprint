@@ -7,12 +7,14 @@ export default function Home() {
     <main className="relative flex flex-col items-center justify-center print:mx-[24mm]">
       <div className="w-full max-w-2xl px-4 mb-8 prose">
         <div className="pt-16 pb-12 md:pt-24">
-          <h1 className="my-2 font-serif !leading-[1.1em] tracking-tight text-center">Print any Wikipedia article</h1>
+          <h1 className="my-2 font-serif !leading-[1.1em] tracking-tight text-center">
+            Get a beautiful, printer friendly version of any Wikipedia article
+          </h1>
           <div className="font-serif text-xl md:text-2xl !mt-0 text-center">(for free)</div>
         </div>
 
-        <div className="p-4 mb-16 space-y-4 rounded-lg md:mb-24 bg-slate-100">
-          <h2 className="!my-0">Enter a Wikipedia article below</h2>
+        <div className="px-6 py-6 mb-16 space-y-4 rounded-lg shadow-inner md:mb-24 bg-sky-200/30">
+          {/* <h2 className="!my-0 text-center">Enter a Wikipedia article below</h2> */}
           <div className="flex flex-col w-full not-prose">
             <div className="flex justify-center">
               <WikipediaUrlForm slug={"French_cuisine"} noArticle />
