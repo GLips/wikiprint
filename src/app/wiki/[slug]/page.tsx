@@ -1,12 +1,11 @@
+// TODO: Lift current filter state to URL params for easier sharing
 // TODO: Homepage "fun" articles
 // TODO: Add a discreet "Printed from Wikiprint" footer
 // TODO: Better loading state than "Loading..."
 // TODO: Add ability to hide paragraphs within sections
-// TODO: Lift current filter state to URL params for easier sharing
 // TODO: Support nesting within section/header data structure to improve functionality and possibly styling
 // TODO? Add a "currently looking at" indicator based on scroll location to the table of contents
 //  TODO: Automatically hide all sub-sections via option e.g. References > Bibliography on Republic_of_Ireland page
-// TODO? Look into NextJS 13 suspense boundaries?
 "use client";
 
 import { Button } from "@/components/ui/button";
