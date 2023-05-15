@@ -3,6 +3,7 @@ import "./globals.css";
 import { Inter, Newsreader } from "next/font/google";
 import Image from "next/image";
 import Link from "next/link";
+import { Analytics } from "@/components/analytics";
 
 const sans = Inter({ subsets: ["latin"], variable: "--font-sans", display: "swap" });
 const serif = Newsreader({ subsets: ["latin"], variable: "--font-serif", display: "swap" });
@@ -47,6 +48,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </div>
         {children}
         <link rel="stylesheet" href="/print.css" media="print" />
+        <Analytics GA_TRACKING_ID={process.env.NEXT_PUBLIC_GA_TRACKING_ID || ""} />
       </body>
     </html>
   );
