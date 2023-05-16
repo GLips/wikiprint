@@ -114,7 +114,7 @@ function Home({ params, searchParams }: HomeProps) {
 
   return (
     <main className="relative flex flex-col items-center justify-between print:mx-[24mm]">
-      <div className="flex items-start justify-start w-full px-4 mb-48 gap-36 print:mb-0">
+      <div className="flex items-start justify-start w-full gap-8 px-4 mb-48 lg:gap-36 print:mb-0">
         <div className="sticky hidden w-full max-w-xs md:block print:hidden top-header">
           <TableOfContents
             headers={headers}
