@@ -12,7 +12,7 @@
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useListState } from "@mantine/hooks";
+import { useDocumentTitle, useListState } from "@mantine/hooks";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import TableOfContents from "@/components/table-of-contents";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
@@ -65,11 +65,15 @@ function Home({ params, searchParams }: HomeProps) {
   const { data, error } = useQuery({
     queryKey: ["article", params.slug, searchParams.lang],
     queryFn: () => fetchArticleData(articleUrl),
-    onSuccess: updateArticleState,
+    onSuccess(values) {
+      updateArticleState(values);
+    },
     cacheTime: 60 * 10 * 1000,
     staleTime: Infinity,
   });
   const { raw, title, pageSlug, status, sections, headers, lang } = { ...state, ...data };
+  console.log(title);
+  useDocumentTitle(title || pageSlug.replace(/_/g, " "));
 
   const articleRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
