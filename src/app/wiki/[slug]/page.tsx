@@ -72,7 +72,6 @@ function Home({ params, searchParams }: HomeProps) {
     staleTime: Infinity,
   });
   const { raw, title, pageSlug, status, sections, headers, lang } = { ...state, ...data };
-  console.log(title);
   useDocumentTitle(title || pageSlug.replace(/_/g, " "));
 
   const articleRef = useRef<HTMLDivElement>(null);
