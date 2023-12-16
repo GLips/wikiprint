@@ -34,10 +34,13 @@ const getChecker =
   (needle: string): boolean => {
     if (typeof haystack === "string") {
       // Handle string of space-separated CSS classes
+      if(needle === "") return haystack === needle;
       return haystack.split(" ").includes(needle);
     } else if (Array.isArray(haystack)) {
+      if(needle === "") return haystack.length === 0;
       return haystack.includes(needle);
     } else {
+      if(needle === "" && haystack === undefined) return true;
       return false;
     }
   };

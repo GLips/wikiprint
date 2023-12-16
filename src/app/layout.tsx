@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   description: "Printer friendly versions of Wikipedia articles.",
   openGraph: {
     title: "Wikiprint",
-    description: "Beautiful print versions of any Wikipedia article.",
+    description: "Print any Wikipedia article in a beautiful, readable format.",
     url: "https://wikiprint.vercel.app/",
     siteName: "Wikiprint",
     images: [

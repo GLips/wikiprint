@@ -20,6 +20,10 @@ export const defaultFilters: HastFilter[] = [
     className: "gallery",
   },
   {
+    tagName: "figure",
+    className: ["mw-default-size", ""]
+  },
+  {
     tagName: "sup",
     className: "reference",
   },
