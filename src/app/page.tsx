@@ -5,7 +5,7 @@ import WikipediaUrlForm from "@/components/wikipedia-url-form";
 export default function Home() {
   return (
     <main className="relative flex flex-col items-center justify-center print:mx-[24mm]">
-      <div className="w-full max-w-2xl px-4 mb-8 prose">
+      <div className="px-4 mb-8 w-full max-w-2xl prose">
         <div className="pt-16 pb-12 md:pt-24">
           <h1 className="my-2 font-serif !leading-[1.1em] tracking-tight text-center">
             Get a beautiful, printer friendly version of any Wikipedia article
@@ -22,19 +22,20 @@ export default function Home() {
           </div>
         </div>
       </div>
-      <div className="relative flex flex-col items-center w-full bg-slate-900 test">
+      <div className="flex relative flex-col items-center w-full bg-slate-900 test">
         <div className="glow" />
-        <div className="w-full px-4 py-48 space-y-12 md:space-y-24 max-w-7xl">
+        <div className="px-4 py-48 space-y-12 w-full max-w-7xl md:space-y-24">
           <div className="mb-48 font-serif text-5xl text-slate-300">You have questions...</div>
           <div className="test">
             <FAQ question="Why do I need a special site to print Wikipedia articles?">
               <p>
-                Honestly, I don't know, but Wikipedia articles are hideous when printed. A convoluted jumble of text,
-                tables, images, and references. A great ink cartridge endurance test, but that's about it.
+                Honestly, I don't know, but Wikipedia articles are hideous when printed. A
+                convoluted jumble of text, tables, images, and references. A great ink cartridge
+                endurance test, but that's about it.
               </p>
               <p>See for yourself.</p>
             </FAQ>
-            <div className="grid items-center justify-center grid-cols-1 gap-4 pt-24 lg:grid-cols-7">
+            <div className="grid grid-cols-1 gap-4 justify-center items-center pt-24 lg:grid-cols-7">
               <Image
                 alt="A printed Wikipedia page. Eww!"
                 title="A printed Wikipedia page. Eww!"
@@ -53,10 +54,10 @@ export default function Home() {
                 height={1345 / 2}
               />
             </div>
-            <div className="flex items-center justify-center gap-4 my-16 lg:my-32">
+            <div className="flex gap-4 justify-center items-center my-16 lg:my-32">
               <span className="font-sans text-3xl text-slate-300">and</span>
             </div>
-            <div className="grid items-center justify-center grid-cols-1 gap-4 lg:grid-cols-7">
+            <div className="grid grid-cols-1 gap-4 justify-center items-center lg:grid-cols-7">
               <Image
                 alt="Wikipedia generally includes many pages full of footnotes and references."
                 src="/wikipedia-references.png"
@@ -71,7 +72,7 @@ export default function Home() {
             </div>
           </div>
           <FAQ question="I have an idea for a feature!">
-            <p>That's not a question, but I respect your enthusiasm.</p>
+            <p>That's not a question, but I appreciate the enthusiasm!</p>
             <p>
               Wikiprint is an open source project, and{" "}
               <a
@@ -111,7 +112,12 @@ export default function Home() {
       </div>
       <svg aria-hidden="true" className="hidden">
         <filter id="noiseFilter">
-          <feTurbulence type="fractalNoise" baseFrequency="6.29" numOctaves="6" stitchTiles="stitch"></feTurbulence>
+          <feTurbulence
+            type="fractalNoise"
+            baseFrequency="6.29"
+            numOctaves="6"
+            stitchTiles="stitch"
+          ></feTurbulence>
         </filter>
       </svg>
     </main>
@@ -124,7 +130,7 @@ type FAQProps = {
 };
 function FAQ({ question, children }: FAQProps) {
   return (
-    <div className="relative flex flex-col w-full max-w-prose">
+    <div className="flex relative flex-col w-full max-w-prose">
       <h2 className="mb-4 mt-0 font-serif !text-2xl text-slate-300">{question}</h2>
       <div className="prose text-slate-200">{children}</div>
     </div>
