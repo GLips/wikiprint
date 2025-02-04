@@ -34,13 +34,13 @@ const getChecker =
   (needle: string): boolean => {
     if (typeof haystack === "string") {
       // Handle string of space-separated CSS classes
-      if(needle === "") return haystack === needle;
+      if (needle === "") return haystack === needle;
       return haystack.split(" ").includes(needle);
     } else if (Array.isArray(haystack)) {
-      if(needle === "") return haystack.length === 0;
+      if (needle === "") return haystack.length === 0;
       return haystack.includes(needle);
     } else {
-      if(needle === "" && haystack === undefined) return true;
+      if (needle === "" && haystack === undefined) return true;
       return false;
     }
   };
@@ -50,7 +50,9 @@ const headingElementList = ["h1", "h2", "h3", "h4", "h5", "h6"];
  * Check if provided string is a heading
  */
 export function isHeading(node: Element): node is HastHeaderElement {
-  return headingElementList.includes(node.tagName);
+  return getChecker(node.properties?.className)("mw-heading");
+  // return classList?.includes("mw-headline");
+  // return headingElementList.includes(node.tagName);
 }
 
 export function isContentWrapper(node: Element): boolean {

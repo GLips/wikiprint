@@ -9,21 +9,32 @@ type ReturnType = {
   section: SectionData;
 };
 
-export function createSectionData(node: HastHeaderElement, index: number, parent: Element | Root): ReturnType {
+export function createSectionData(
+  node: HastHeaderElement,
+  index: number,
+  parent: Element | Root
+): ReturnType {
   const header = getHeaderData(node);
+  console.log("parent", parent);
   const section = { id: header.id, ...getSectionData(parent.children, index, node) };
   return { section, header };
 }
 
+const headingElementList = ["h1", "h2", "h3", "h4", "h5", "h6"];
+
 function getHeaderData(node: HastHeaderElement) {
   let title = "";
   let id = "";
+  let tagName = node.tagName;
 
   // Visit the nodes of the heading since an inner <span> contains the id
   visit(
     node,
     (x) => ["text", "element"].includes(x.type),
     (c) => {
+      if ("tagName" in c && headingElementList.includes(c.tagName)) {
+        tagName = c.tagName as HeadingElementValues;
+      }
       if (c.type === "text") {
         title += c.value;
       } else if ("properties" in c && c.properties && c.properties.id) {
@@ -35,7 +46,7 @@ function getHeaderData(node: HastHeaderElement) {
     }
   );
 
-  return { type: node.tagName, title, id };
+  return { type: tagName, title, id };
 }
 
 function getSectionData(...params: Parameters<typeof collectSiblings>) {

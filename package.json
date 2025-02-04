@@ -49,7 +49,9 @@
     "zod": "^3.21.4"
   },
   "devDependencies": {
+    "@ianvs/prettier-plugin-sort-imports": "^4.4.1",
     "@tailwindcss/typography": "^0.5.9",
-    "@tanstack/eslint-plugin-query": "^4.29.4"
+    "@tanstack/eslint-plugin-query": "^4.29.4",
+    "prettier-plugin-tailwindcss": "^0.6.11"
   }
 }

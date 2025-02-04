@@ -117,8 +117,8 @@ function Home({ params, searchParams }: HomeProps) {
 
   return (
     <main className="relative flex flex-col items-center justify-between print:mx-[24mm]">
-      <div className="flex items-start justify-start w-full gap-8 px-4 mb-48 lg:gap-36 print:mb-0">
-        <div className="sticky hidden w-full max-w-xs md:block print:hidden top-header">
+      <div className="flex gap-8 justify-start items-start px-4 mb-48 w-full lg:gap-36 print:mb-0">
+        <div className="hidden sticky w-full max-w-xs md:block print:hidden top-header">
           <TableOfContents
             headers={headers}
             show={(id) => hiddenIdsHandlers.filter((x) => x !== id)}
@@ -135,14 +135,14 @@ function Home({ params, searchParams }: HomeProps) {
             <>
               <div className="prose print:prose-sm" ref={articleRef}>
                 {title ? <h1 className="hidden !mb-0 print:block">{title}</h1> : null}
-                {sections.map((s) => {
+                {sections.map((s, i) => {
                   const isHidden = hiddenIds.includes(s.id);
                   const show = (id: string) => hiddenIdsHandlers.filter((x) => x !== s.id);
                   const hide = (id: string) => hiddenIdsHandlers.append(s.id);
                   return <Section key={s.id} isHidden={isHidden} toggle={isHidden ? show : hide} {...s} />;
                 })}
               </div>
-              {/* <div className="fixed left-0 right-0 hidden mx-auto font-mono text-xs text-center print:block">
+              {/* <div className="hidden fixed right-0 left-0 mx-auto font-mono text-xs text-center print:block">
                 Printed from https://wikiprint.vercel.app/wiki/{pageSlug}
               </div> */}
               <RawContent raw={raw} />
@@ -171,7 +171,7 @@ function Section({
       <div
         className={cn([
           {
-            "hide-content print:hidden opacity-50 hover:opacity-100 cursor-pointer": isHidden,
+            "opacity-50 cursor-pointer hide-content print:hidden hover:opacity-100": isHidden,
           },
         ])}
         onClick={() => {
@@ -191,7 +191,7 @@ function Section({
 function RawContent({ raw }: { raw?: string }) {
   if (process.env.NODE_ENV !== "development" || !raw) return null;
   return (
-    <Accordion className="mb-8 prose text-left print:hidden prose-headings:m-0 prose-pre:m-0" type="single" collapsible>
+    <Accordion className="mb-8 text-left prose print:hidden prose-headings:m-0 prose-pre:m-0" type="single" collapsible>
       <AccordionItem value="item-1">
         <AccordionTrigger className="justify-between font-mono text-3xl font-bold text-left">
           Raw content
